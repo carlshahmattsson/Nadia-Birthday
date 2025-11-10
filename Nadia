@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Happy Birthday — A Special Page</title>
+
+  <!-- Google font (optional) -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg1:#fff2f6;
+      --bg2:#fff7ee;
+      --accent:#ff4d94;
+      --muted:#666;
+      --card:#fff;
+      --shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      margin:0;
+      background: linear-gradient(135deg,var(--bg1),var(--bg2));
+      color:#222;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:20px;
+      padding:28px 16px 80px;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:980px;
+    }
+
+    header{
+      text-align:center;
+      margin-bottom:6px;
+    }
+    h1{font-size:2.2rem;margin:0}
+    p.lead{color:var(--muted); margin:6px 0 18px;}
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:20px;
+    }
+    @media (max-width:900px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:14px;
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+
+    /* Countdown */
+    .countdown{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      align-items:center;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+    .countdown .block{
+      min-width:70px;
+      padding:10px;
+      border-radius:10px;
+      background:linear-gradient(180deg,#fff,#fdf2f6);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+      text-align:center;
+    }
+    .block .num{font-size:1.4rem;font-weight:700}
+    .block .lab{font-size:0.8rem;color:var(--muted)}
+
+    /* Gallery */
+    .gallery-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fill,minmax(120px,1fr));
+      gap:10px;
+      margin-top:12px;
+    }
+    .gallery-grid img{
+      width:100%; height:100px; object-fit:cover; border-radius:10px; cursor:pointer;
+      display:block;
+    }
+    .uploader{display:flex; gap:8px; align-items:center; margin-top:10px;}
+
+    /* Games */
+    .game-btn{
+      display:inline-block; padding:8px 12px; border-radius:999px; background:var(--accent); color:white; text-decoration:none;
+      margin:4px 6px 4px 0; cursor:pointer;
+    }
+    .quiz-question{margin-top:12px}
+    .choices button{display:block; width:100%; text-align:left; margin:8px 0; padding:10px; border-radius:8px; border:1px solid #eee; background:#fff}
+    .small{font-size:0.9rem;color:var(--muted)}
+
+    /* Memory game */
+    .memory-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px}
+    .card-face{position:relative;padding-top:100%; border-radius:10px; overflow:hidden; cursor:pointer; background:#f7f7f7; display:flex;align-items:center;justify-content:center}
+    .card-face img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform:scale(1.05)}
+    .card-face .back{position:absolute; inset:0; display:flex;align-items:center;justify-content:center; font-weight:700; font-size:1.2rem; color:#fff; background:linear-gradient(180deg,#ff8cc9,#ff4d94)}
+
+    /* Lightbox */
+    .lightbox{
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+      background:rgba(0,0,0,0.65); z-index:999;
+    }
+    .lightbox img{max-width:92%; max-height:86%; border-radius:12px}
+
+    footer{margin-top:20px; text-align:center; color:var(--muted); font-size:0.9rem}
+    .muted{color:var(--muted)}
+
+    /* tiny helpers */
+    .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    input[type="date"], input[type="text"], .small-input{padding:8px;border-radius:8px;border:1px solid #eee}
+    .tiny{font-size:0.85rem; padding:6px 8px}
+    .center{display:flex; justify-content:center}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>🎉 Happy Birthday! 🎂</h1>
+      <p class="lead">A little website I made — full of memories, games, music, & a countdown. Customize anything you like!</p>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT: Content -->
+      <div>
+        <!-- Countdown card -->
+        <section class="card" id="countdownCard" aria-labelledby="countdownTitle">
+          <h2 id="countdownTitle">Countdown</h2>
+          <p class="small muted">Set the date below (or keep the example). The countdown updates live.</p>
+          <div class="row" style="margin-top:8px">
+            <input id="targetDate" type="date" class="small-input" />
+            <button id="setDate" class="game-btn tiny">Set date</button>
+            <button id="resetDate" class="tiny">Reset</button>
+          </div>
+
+          <div class="countdown" id="countdown">
+            <div class="block"><div class="num" id="days">--</div><div class="lab">Days</div></div>
+            <div class="block"><div class="num" id="hours">--</div><div class="lab">Hours</div></div>
+            <div class="block"><div class="num" id="mins">--</div><div class="lab">Minutes</div></div>
+            <div class="block"><div class="num" id="secs">--</div><div class="lab">Seconds</div></div>
+          </div>
+        </section>
+
+        <!-- Memory gallery -->
+        <section class="card" style="margin-top:16px">
+          <h2>Memory Gallery</h2>
+          <p class="small muted">Upload photos here — click thumbnails to view larger. You can also drag & drop images into the gallery area.</p>
+
+          <div class="uploader">
+            <input id="fileInput" type="file" accept="image/*" multiple />
+            <input id="imgUrl" type="text" class="small-input" placeholder="Or paste an image URL and press Add" />
+            <button id="addUrl" class="game-btn tiny">Add</button>
+            <button id="clearGallery" class="tiny">Clear</button>
+          </div>
+
+          <div id="gallery" class="gallery-grid" ondragover="event.preventDefault()" ondrop="handleDrop(event)"></div>
+
+        </section>
+
+        <!-- Games -->
+        <section class="card" style="margin-top:16px">
+          <h2>Mini Games</h2>
+          <p class="small muted">Two quick games to make it fun: a personal quiz, and a memory matching game.</p>
+
+          <div style="margin-top:10px">
+            <div class="row">
+              <button id="startQuiz" class="game-btn">Play Quiz</button>
+              <button id="startMemory" class="game-btn">Play Memory Match</button>
+            </div>
+
+            <!-- Quiz area -->
+            <div id="quizArea" style="display:none; margin-top:12px">
+              <div class="card" style="padding:12px">
+                <h3 id="quizTitle">How well do you know me?</h3>
+                <div class="quiz-question" id="questionText"></div>
+                <div class="choices" id="choices"></div>
+                <div id="quizResult" class="small muted" style="margin-top:8px"></div>
+                <div style="margin-top:8px">
+                  <button id="nextQ" class="tiny">Next</button>
+                  <button id="quitQuiz" class="tiny">Quit</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Memory game area -->
+            <div id="memoryArea" style="display:none; margin-top:12px">
+              <div class="card" style="padding:12px">
+                <div class="row" style="justify-content:space-between">
+                  <div class="small muted">Find all matching pairs!</div>
+                  <div id="memoryScore" class="small muted">Moves: 0</div>
+                </div>
+                <div id="memoryGrid" class="memory-grid"></div>
+                <div style="margin-top:10px">
+                  <button id="restartMemory" class="tiny">Restart</button>
+                  <button id="quitMemory" class="tiny">Quit</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+
+      <!-- RIGHT: Sidebar for playlist & quick notes -->
+      <aside>
+        <div class="card">
+          <h2>Playlist</h2>
+          <p class="small muted">Paste a Spotify track/playlist URL or a YouTube link.</p>
+          <input id="playlistInput" type="text" class="small-input" placeholder="Paste Spotify or YouTube link here" />
+          <div style="margin-top:8px" class="row">
+            <button id="loadPlaylist" class="game-btn tiny">Load</button>
+            <button id="clearPlaylist" class="tiny">Clear</button>
+          </div>
+
+          <div id="player" style="margin-top:12px"></div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <h3>Write a message</h3>
+          <textarea id="messageBox" rows="6" style="width:100%; padding:10px; border-radius:10px; border:1px solid #eee" placeholder="Write a birthday message..."></textarea>
+          <div style="margin-top:8px" class="row">
+            <button id="saveMsg" class="game-btn tiny">Save Locally</button>
+            <button id="clearMsg" class="tiny">Clear</button>
+          </div>
+          <p id="msgSaved" class="small muted" style="margin-top:8px; display:none">Saved to your browser (so you can edit later).</p>
+        </div>
+
+      </aside>
+    </div>
+
+    <footer class="muted">
+      Tip: Edit the questions, photos, or the countdown date in the controls above. When you're ready, publish on Glitch or GitHub Pages and send the link 💌
+    </footer>
+
+    <!-- Lightbox for gallery -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+      <img id="lightboxImg" src="" alt="Large photo view" />
+    </div>
+  </div>
+
+  <script>
+    /* -----------------------------
+       CONFIG / PLACEHOLDERS – edit these in code if you prefer
+       ----------------------------- */
+    // Example quiz data — edit the text to personalize.
+    const QUIZ = [
+      {q:"Where did we meet?", choices:["School","Park","Online","At a party"], a:2},
+      {q:"What's my favorite snack?", choices:["Pizza","Chocolate","Chips","Sushi"], a:1},
+      {q:"Which movie did we watch on our first date?", choices:["Inception","La La Land","The Notebook","Star Wars"], a:2}
+    ];
+
+    // Memory game images (will use gallery images if present — fallback images here)
+    const MEMORY_FALLBACK = [
+      'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=800&q=60',
+      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=800&q=60',
+      'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?w=800&q=60',
+      'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=800&q=60'
+    ];
+
+    /* -----------------------------
+       HELPERS: small util functions
+       ----------------------------- */
+    function el(id){return document.getElementById(id)}
+    function saveToLocal(key, data){localStorage.setItem(key, JSON.stringify(data))}
+    function loadFromLocal(key){try{return JSON.parse(localStorage.getItem(key))}catch(e){return null}}
+
+    /* -----------------------------
+       COUNTDOWN
+       ----------------------------- */
+    const daysEl=el('days'), hoursEl=el('hours'), minsEl=el('mins'), secsEl=el('secs');
+    const dateInput=el('targetDate'), setDateBtn=el('setDate'), resetDateBtn=el('resetDate');
+
+    // Default: no preset target date. We'll try to load from localStorage
+    let targetDate = loadFromLocal('bday_target') ? new Date(loadFromLocal('bday_target')) : null;
+
+    // populate date input with saved or blank
+    if (targetDate){
+      // format yyyy-mm-dd
+      const dd = targetDate.toISOString().slice(0,10);
+      dateInput.value = dd;
+    } else {
+      dateInput.value = '';
+    }
+
+    function updateCountdown(){
+      if(!targetDate){ daysEl.textContent='--'; hoursEl.textContent='--'; minsEl.textContent='--'; secsEl.textContent='--'; return;}
+      const now = new Date();
+      const diff = targetDate - now;
+      if(diff<=0){
+        daysEl.textContent='0'; hoursEl.textContent='0'; minsEl.textContent='0'; secsEl.textContent='0';
+        return;
+      }
+      const s = Math.floor(diff/1000);
+      const days = Math.floor(s/86400); const hours = Math.floor((s%86400)/3600);
+      const mins = Math.floor((s%3600)/60); const secs = s%60;
+      daysEl.textContent = days;
+      hoursEl.textContent = hours;
+      minsEl.textContent = mins;
+      secsEl.textContent = secs;
+    }
+    setDateBtn.addEventListener('click', ()=>{
+      const v = dateInput.value;
+      if(!v){ alert('Pick a date (YYYY-MM-DD)'); return; }
+      // target date set to end of day local time (so countdown hits midnight end-of-day)
+      targetDate = new Date(v + 'T23:59:59');
+      saveToLocal('bday_target', targetDate.toISOString());
+      updateCountdown();
+    });
+    resetDateBtn.addEventListener('click', ()=>{
+      targetDate = null;
+      localStorage.removeItem('bday_target');
+      dateInput.value = '';
+      updateCountdown();
+    });
+    // tick
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    /* -----------------------------
+       GALLERY
+       ----------------------------- */
+    const galleryEl = el('gallery'), fileInput=el('fileInput'), addUrlBtn=el('addUrl'), imgUrlInput=el('imgUrl'), clearGalleryBtn=el('clearGallery');
+    let images = loadFromLocal('bday_gallery') || []; // store as array of data URLs or remote URLs
+
+    function renderGallery(){
+      galleryEl.innerHTML = '';
+      images.forEach((src, i)=>{
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = 'Memory ' + (i+1);
+        img.addEventListener('click', ()=>openLightbox(src));
+        galleryEl.appendChild(img);
+      });
+      // if no images, show a placeholder message
+      if(images.length===0){
+        const p = document.createElement('div');
+        p.className='small muted';
+        p.style.padding='18px';
+        p.textContent = 'No photos yet — upload with the button above or paste an image URL.';
+        galleryEl.appendChild(p);
+      }
+    }
+
+    function handleFiles(files){
+      Array.from(files).forEach(file=>{
+        if(!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = e=>{
+          images.push(e.target.result);
+          saveToLocal('bday_gallery', images);
+          renderGallery();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    fileInput.addEventListener('change', (e)=> handleFiles(e.target.files));
+    addUrlBtn.addEventListener('click', ()=>{
+      const url = imgUrlInput.value.trim(); if(!url) return;
+      images.push(url);
+      imgUrlInput.value='';
+      saveToLocal('bday_gallery', images);
+      renderGallery();
+    });
+    clearGalleryBtn.addEventListener('click', ()=>{ if(!confirm('Clear gallery?')) return; images=[]; localStorage.removeItem('bday_gallery'); renderGallery();});
+
+    // Drag and drop handler
+    function handleDrop(ev){
+      ev.preventDefault();
+      const dt = ev.dataTransfer;
+      if(dt.files && dt.files.length) handleFiles(dt.files);
+      else if(dt.getData){
+        const url = dt.getData('text/plain');
+        if(url) { images.push(url); saveToLocal('bday_gallery', images); renderGallery(); }
+      }
+    }
+
+    // Lightbox
+    function openLightbox(src){
+      el('lightboxImg').src = src;
+      el('lightbox').style.display = 'flex';
+    }
+    function closeLightbox(){ el('lightbox').style.display='none'; el('lightboxImg').src=''; }
+
+    renderGallery();
+
+    /* -----------------------------
+       Playlist loader (Spotify or YouTube)
+       ----------------------------- */
+    const playlistInput = el('playlistInput'), loadPlaylistBtn = el('loadPlaylist'), playerEl = el('player'), clearPl = el('clearPlaylist');
+
+    function embedSpotify(url){
+      // Try to extract the id and type (track/playlist/album). Spotify embed format: https://open.spotify.com/playlist/{id}
+      try{
+        const u = new URL(url);
+        const parts = u.pathname.split('/');
+        const type = parts[1], id = parts[2];
+        if(type && id){
+          const src = `https://open.spotify.com/embed/${type}/${id}`;
+          playerEl.innerHTML = `<iframe src="${src}" width="100%" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
+          return true;
+        }
+      }catch(e){}
+      return false;
+    }
+    function embedYouTube(url){
+      try{
+        const u = new URL(url);
+        let id = '';
+        if(u.hostname.includes('youtu.be')) id = u.pathname.slice(1);
+        else id = new URLSearchParams(u.search).get('v');
+        if(id){
+          playerEl.innerHTML = `<iframe width="100%" height="215" src="https://www.youtube.com/embed/${id}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+          return true;
+        }
+      }catch(e){}
+      return false;
+    }
+
+    loadPlaylistBtn.addEventListener('click', ()=>{
+      const v = playlistInput.value.trim();
+      if(!v){ alert('Paste a Spotify or YouTube URL first'); return; }
+      if(embedSpotify(v)) { saveToLocal('bday_playlist', v); return; }
+      if(embedYouTube(v)) { saveToLocal('bday_playlist', v); return; }
+      alert('Could not recognize that link. Use a full Spotify playlist/track URL or YouTube link.');
+    });
+
+    clearPl.addEventListener('click', ()=>{ localStorage.removeItem('bday_playlist'); playlistInput.value=''; playerEl.innerHTML=''; });
+
+    // load saved playlist if any
+    const savedPl = loadFromLocal('bday_playlist');
+    if(savedPl){ playlistInput.value = savedPl; if(!embedSpotify(savedPl)) embedYouTube(savedPl); }
+
+    /* -----------------------------
+       Message box saved locally
+       ----------------------------- */
+    const msgBox = el('messageBox'), saveMsgBtn = el('saveMsg'), clearMsgBtn=el('clearMsg'), msgSavedNote=el('msgSaved');
+    const savedMsg = loadFromLocal('bday_message');
+    if(savedMsg) msgBox.value = savedMsg;
+    saveMsgBtn.addEventListener('click', ()=>{ saveToLocal('bday_message', msgBox.value || ''); msgSavedNote.style.display='block'; setTimeout(()=>msgSavedNote.style.display='none',1800); });
+    clearMsgBtn.addEventListener('click', ()=>{ if(!confirm('Clear message?')) return; msgBox.value=''; localStorage.removeItem('bday_message'); });
+
+    /* -----------------------------
+       QUIZ GAME
+       ----------------------------- */
+    const startQuizBtn = el('startQuiz'), quizArea = el('quizArea'), questionText = el('questionText'), choicesEl = el('choices'), quizResult = el('quizResult'), nextQBtn = el('nextQ'), quitQuizBtn = el('quitQuiz');
+    let quizIndex=0, quizScore=0, quizActive=false;
+
+    startQuizBtn.addEventListener('click', ()=>{
+      quizIndex = 0; quizScore = 0; quizActive=true;
+      quizArea.style.display='block'; el('memoryArea').style.display='none';
+      renderQuiz();
+    });
+
+    function renderQuiz(){
+      const q = QUIZ[quizIndex];
+      if(!q){ // end
+        questionText.innerHTML = `<strong>Finished!</strong> You scored ${quizScore} / ${QUIZ.length}.`;
+        choicesEl.innerHTML = '';
+        quizResult.textContent = '';
+        return;
+      }
+      questionText.textContent = q.q;
+      choicesEl.innerHTML = '';
+      q.choices.forEach((c, i)=>{
+        const b = document.createElement('button');
+        b.textContent = c;
+        b.addEventListener('click', ()=> chooseAnswer(i));
+        choicesEl.appendChild(b);
+      });
+      quizResult.textContent = `Question ${quizIndex+1} of ${QUIZ.length}`;
+    }
+
+    function chooseAnswer(i){
+      const correct = QUIZ[quizIndex].a;
+      if(i===correct){
+        quizScore++;
+        quizResult.textContent = 'Nice! Correct ✅';
+      } else {
+        quizResult.textContent = `Good try — correct answer: ${QUIZ[quizIndex].choices[correct]}`;
+      }
+      // disable choice buttons
+      Array.from(choicesEl.children).forEach(b=>b.disabled=true);
+    }
+
+    nextQBtn.addEventListener('click', ()=>{
+      quizIndex++;
+      if(quizIndex >= QUIZ.length){
+        renderQuiz();
+        quizActive=false;
+      } else renderQuiz();
+    });
+    quitQuizBtn.addEventListener('click', ()=>{
+      quizArea.style.display='none'; quizActive=false;
+    });
+
+    /* -----------------------------
+       MEMORY MATCH GAME
+       ----------------------------- */
+    const startMemoryBtn = el('startMemory'), memoryArea = el('memoryArea'), memoryGrid = el('memoryGrid'), memoryScoreEl=el('memoryScore'), restartMemoryBtn = el('restartMemory'), quitMemoryBtn=el('quitMemory');
+    let memCards = [], memFirst=null, memSecond=null, memLock=false, memMoves=0, memMatches=0;
+
+    startMemoryBtn.addEventListener('click', ()=>{ initMemory(); memoryArea.style.display='block'; quizArea.style.display='none'; });
+
+    restartMemoryBtn.addEventListener('click', initMemory);
+    quitMemoryBtn.addEventListener('click', ()=>{ memoryArea.style.display='none'; });
+
+    function initMemory(){
+      // gather source images: prefer gallery images (if >=4), else fallback images
+      const cardImages = images.length >=4 ? images.slice(0,4) : MEMORY_FALLBACK.slice(0,4);
+      // make pairs
+      memCards = shuffle([...cardImages, ...cardImages]); // length 8
+      memFirst = memSecond = null; memLock=false; memMoves=0; memMatches=0;
+      renderMemory();
+      memoryScoreEl.textContent = `Moves: ${memMoves}`;
+    }
+
+    function renderMemory(){
+      memoryGrid.innerHTML = '';
+      memCards.forEach((src, i)=>{
+        const wrapper = document.createElement('div');
+        wrapper.className='card-face';
+        wrapper.dataset.index = i;
+        wrapper.innerHTML = `<div class="back">?</div><img src="${src}" style="display:none" />`;
+        wrapper.addEventListener('click', ()=>flipCard(wrapper));
+        memoryGrid.appendChild(wrapper);
+      });
+    }
+
+    function flipCard(elm){
+      if(memLock) return;
+      if(elm === memFirst) return;
+      const img = elm.querySelector('img');
+      const back = elm.querySelector('.back');
+      img.style.display = 'block';
+      back.style.display='none';
+
+      if(!memFirst){ memFirst = elm; return; }
+      memSecond = elm; memLock = true; memMoves++; memoryScoreEl.textContent = `Moves: ${memMoves}`;
+
+      // check match
+      const i1 = memFirst.querySelector('img').src;
+      const i2 = memSecond.querySelector('img').src;
+      if(i1 === i2){
+        memMatches++;
+        setTimeout(()=>{ memFirst=null; memSecond=null; memLock=false;
+          if(memMatches === memCards.length/2) {
+            setTimeout(()=>alert(`You matched all pairs in ${memMoves} moves! 🎉`), 300);
+          }
+        }, 500);
+      } else {
+        // flip back after short delay
+        setTimeout(()=>{
+          memFirst.querySelector('img').style.display='none';
+          memFirst.querySelector('.back').style.display='flex';
+          memSecond.querySelector('img').style.display='none';
+          memSecond.querySelector('.back').style.display='flex';
+          memFirst=null; memSecond=null; memLock=false;
+        }, 700);
+      }
+    }
+
+    function shuffle(a){ // fisher-yates
+      for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+      return a;
+    }
+
+    /* -----------------------------
+       Quick UI: quit / hide sections when clicking outside
+       ----------------------------- */
+    document.addEventListener('keydown', e=>{
+      if(e.key === 'Escape') closeLightbox();
+    });
+
+    /* -----------------------------
+       INITIALIZE: small defaults & local data if available
+       ----------------------------- */
+    // If user hasn't picked a date, prefill with an example: (commented out)
+    // dateInput.value = ''; // empty by default
+
+    // Preload example gallery sample (only if gallery is empty)
+    if(images.length===0){
+      // You can uncomment these example URLs to show sample pics on first load:
+      // images = MEMORY_FALLBACK.slice(); saveToLocal('bday_gallery', images);
+      // renderGallery();
+    }
+
+    // small safety: wipe images data urls if over limit (browsers can slow)
+    if(images.length > 30) { images = images.slice(0,30); saveToLocal('bday_gallery', images); renderGallery(); }
+
+  </script>
+
+</body>
+</html>
